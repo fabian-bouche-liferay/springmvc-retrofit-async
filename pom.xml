@@ -11,8 +11,7 @@
     <module>themes</module>
   </modules>
   <properties>
-    <liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.2.1-ga2/liferay-ce-portal-tomcat-7.2.1-ga2-20191111141448326.tar.gz</liferay.workspace.bundle.url>
-    <liferay.bom.version>7.2.1</liferay.bom.version>
+    <liferay.bom.version>7.3.1</liferay.bom.version>
     <liferay.repository.url>https://repository-cdn.liferay.com/nexus/content/groups/public/</liferay.repository.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>

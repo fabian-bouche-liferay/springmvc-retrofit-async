@@ -1,5 +1,7 @@
 package com.liferay.samples.fbo.spring.petstore.controller;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portletmvc4spring.bind.annotation.RenderMapping;
 
 import javax.portlet.PortletPreferences;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("VIEW")
 public class PetstoreController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PetstoreController.class);
+	private static Log LOG = LogFactoryUtil.getLog(PetstoreController.class);
 
 	@RenderMapping
 	public String prepareView(PortletPreferences portletPreferences) {

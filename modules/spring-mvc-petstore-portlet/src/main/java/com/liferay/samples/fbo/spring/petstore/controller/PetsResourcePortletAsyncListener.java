@@ -1,25 +1,37 @@
 package com.liferay.samples.fbo.spring.petstore.controller;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import java.io.IOException;
+import java.io.Writer;
 
 import javax.portlet.PortletAsyncEvent;
 import javax.portlet.PortletAsyncListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class PetsResourcePortletAsyncListener implements PortletAsyncListener {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PetsResourcePortletAsyncListener.class);
+	private static Log LOG = LogFactoryUtil.getLog(PetsResourcePortletAsyncListener.class);
+	
+	private PetsResourceRequestRunnable _task;
+	
+	public PetsResourcePortletAsyncListener(PetsResourceRequestRunnable task) {
+		this._task = task;
+	}
 	
 	@Override
 	public void onComplete(PortletAsyncEvent evt) throws IOException {
 		LOG.debug("Async complete");
+		Writer writer = evt.getPortletAsyncContext().getResourceResponse().getWriter();
+		writer.close();
 	}
 
 	@Override
 	public void onError(PortletAsyncEvent evt) throws IOException {
 		LOG.error("Async error");
+		Writer writer = evt.getPortletAsyncContext().getResourceResponse().getWriter();
+		writer.append("<h1 style='color: red'>Error</h1>");
+		evt.getPortletAsyncContext().complete();		
 	}
 
 	@Override
@@ -30,6 +42,9 @@ public class PetsResourcePortletAsyncListener implements PortletAsyncListener {
 	@Override
 	public void onTimeout(PortletAsyncEvent evt) throws IOException {
 		LOG.debug("Async timeout");
+		_task.terminate();
+		Writer writer = evt.getPortletAsyncContext().getResourceResponse().getWriter();
+		writer.append("<h1 style='color: red'>Timeout error</h1>");
 		evt.getPortletAsyncContext().complete();		
 	}
 	
