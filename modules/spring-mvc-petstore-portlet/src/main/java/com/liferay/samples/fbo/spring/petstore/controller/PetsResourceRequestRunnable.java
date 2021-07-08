@@ -34,10 +34,26 @@ public class PetsResourceRequestRunnable implements Runnable {
 		this._pendingPetsFuture = pendingPetsFuture;
 		this._soldPetsFuture = soldPetsFuture;
 	}
-	
+
+	public void terminate() {
+		
+		LOG.debug("Request to terminate");
+		
+		this._isTerminated = true;
+
+		// Completable Futures can be canceled!
+		_availablePetsFuture.cancel(true);
+		_pendingPetsFuture.cancel(true);
+		_soldPetsFuture.cancel(true);
+
+		// If the Completable Future has already completed, cancel does nothing 
+		
+	}
+
 	@Override
 	public void run() {
 
+		// We're going to run all 3 requests in parallel
 		getPetsFromApi(this._availablePetsFuture, new MarkAvailablePets(), "available");
 		getPetsFromApi(this._pendingPetsFuture, new MarkPendingPets(), "pending");
 		getPetsFromApi(this._soldPetsFuture, new MarkSoldPets(), "sold");
@@ -46,10 +62,12 @@ public class PetsResourceRequestRunnable implements Runnable {
 
 	public void getPetsFromApi(CompletableFuture<List<Pet>> future, MarkPets callback, String status) {
 
+		// Look closely at the logs, you'll see the order in which they display depends on execution
 		LOG.debug("Running petstore " + status + " request");
 
 		future.exceptionally(exception -> {
 			
+			// In case of an error, I make the future return an empty list instead of the response
 			LOG.error("Failed to get " + status + " Pet", exception);
 			return new ArrayList<>();
 		
@@ -61,6 +79,7 @@ public class PetsResourceRequestRunnable implements Runnable {
 				
 			} else {
 
+				// The task is still running, I'm printing stuff to the output
 				writePets(status, list);
 
 			}
@@ -73,8 +92,10 @@ public class PetsResourceRequestRunnable implements Runnable {
 				
 			} else {
 
+				// This subtask is complete
 				callback.done();
 				
+				// If all 3 tasks are complete, we complete the asyncContext which is going to close the output's writer
 				if(allDone()) {
 					_portletAsyncContext.complete();
 				}
@@ -108,19 +129,7 @@ public class PetsResourceRequestRunnable implements Runnable {
 		}
 		
 	}
-	
-	public void terminate() {
-	
-		LOG.debug("Request to terminate");
 		
-		this._isTerminated = true;
-		
-		_availablePetsFuture.cancel(true);
-		_pendingPetsFuture.cancel(true);
-		_soldPetsFuture.cancel(true);
-		
-	}
-	
 	private boolean allDone() {
 		return _gotAvailablePets && _gotPendingPets && _gotSoldPets; 
 	}

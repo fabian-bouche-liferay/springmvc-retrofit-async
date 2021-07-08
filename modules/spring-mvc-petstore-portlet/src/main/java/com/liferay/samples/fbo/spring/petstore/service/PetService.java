@@ -28,25 +28,30 @@ public class PetService {
 
 	private static final String BASE_URL = "https://petstore.swagger.io/v2/";
 	
-	private static OkHttpClient client = new OkHttpClient.Builder()
-			  .addInterceptor(new OkHttpLoggingInterceptor())
-			  .callTimeout(Constants.OKHTTP_TIMEOUT, TimeUnit.MILLISECONDS)
-			  .build();
-	
-	private static Retrofit.Builder builder = new Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create()).client(client);
-	
+	// This is where I build a completable future for my service call
 	public CompletableFuture<List<Pet>> getPets(String status) {
 
+		// I create a client so that I can attach a logger
+		OkHttpClient client = new OkHttpClient.Builder()
+				  .addInterceptor(new OkHttpLoggingInterceptor())
+				  .callTimeout(Constants.OKHTTP_TIMEOUT, TimeUnit.MILLISECONDS)
+				  .build();
+		
+		Retrofit.Builder builder = new Retrofit.Builder()
+	            .baseUrl(BASE_URL)
+	            .addConverterFactory(GsonConverterFactory.create()).client(client);
+
+		
 		Retrofit retrofit = builder.build();
 		PetApi petApi = retrofit.create(PetApi.class);
 		
 		List<String> statusList = new ArrayList<String>();
 		statusList.add(status);
 		
+		// This is my Retrofit call
 		Call<List<Pet>> asyncCall = petApi.findPetsByStatus(statusList);
 
+		// This is how I manage cancellation
 		final CompletableFuture<List<Pet>> future = new CompletableFuture<List<Pet>>() {
 			@Override public boolean cancel(boolean mayInterruptIfRunning) {
 				if (mayInterruptIfRunning) {
@@ -56,6 +61,7 @@ public class PetService {
 			}
 		};
 		
+		// I'm making an async call and manage the completable future's outcome in Retrofit's callback
 		asyncCall.enqueue(new Callback<List<Pet>>() {
 
 			@Override

@@ -19,6 +19,7 @@ public class PetsResourcePortletAsyncListener implements PortletAsyncListener {
 		this._task = task;
 	}
 	
+	// This is executed once everything completes
 	@Override
 	public void onComplete(PortletAsyncEvent evt) throws IOException {
 		LOG.debug("Async complete");
@@ -39,10 +40,13 @@ public class PetsResourcePortletAsyncListener implements PortletAsyncListener {
 		LOG.debug("Async start");
 	}
 
+	// This is executed on async context timeout 
 	@Override
 	public void onTimeout(PortletAsyncEvent evt) throws IOException {
 		LOG.debug("Async timeout");
+		// We ask the Runnable task to terminate what was still running 
 		_task.terminate();
+		// We write a message to the output 
 		Writer writer = evt.getPortletAsyncContext().getResourceResponse().getWriter();
 		writer.append("<h1 style='color: red'>Timeout error</h1>");
 		evt.getPortletAsyncContext().complete();		
